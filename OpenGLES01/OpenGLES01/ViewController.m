@@ -94,6 +94,12 @@
     glGenBuffers(1, &buffer);  //申请一个标识符
     glBindBuffer(GL_ARRAY_BUFFER, buffer);  //把标识符绑定到GL_ARRAY_BUFFER上
     glBufferData(GL_ARRAY_BUFFER, sizeof(squareVertexData), squareVertexData, GL_STATIC_DRAW); //把顶点数据从CPU内存GPU内存
+    /*
+     最后一个参数：
+     GL_STATIC_DRAW ：数据不会或几乎不会改变。
+     GL_DYNAMIC_DRAW：数据会被改变很多。
+     GL_STREAM_DRAW ：数据每次绘制时都会改变。
+     */
     
     glEnableVertexAttribArray(GLKVertexAttribPosition); //顶点数据缓存  开启对应的顶点属性
     glVertexAttribPointer(GLKVertexAttribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, (GLfloat *)NULL + 0);  //读取顶点数据
@@ -108,7 +114,7 @@
     GLKTextureInfo* textureInfo = [GLKTextureLoader textureWithContentsOfFile:filePath options:options error:nil];  //读取纹理贴图，装填进textureInfo
     //着色器
     self.mEffect = [[GLKBaseEffect alloc] init];
-    self.mEffect.texture2d0.enabled = GL_TRUE;
+    self.mEffect.texture2d0.enabled = GL_TRUE;  //纹理是否可用
     self.mEffect.texture2d0.name = textureInfo.name;
     //对着色器赋值，由于着色器已被设为currentEffect，会即时刷新到屏幕去
 }
