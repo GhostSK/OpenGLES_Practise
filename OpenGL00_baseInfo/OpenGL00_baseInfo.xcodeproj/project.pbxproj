@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B610D5E81F4DDC70008D2CFA /* myFragmentShader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */; };
 		B61E86E61F4D813A00FF0E48 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B61E86E51F4D813A00FF0E48 /* main.m */; };
 		B61E86E91F4D813B00FF0E48 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B61E86E81F4D813B00FF0E48 /* AppDelegate.m */; };
 		B61E86EC1F4D813B00FF0E48 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B61E86EB1F4D813B00FF0E48 /* ViewController.m */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = myFragmentShader.fsh; sourceTree = "<group>"; };
 		B61E86E11F4D813A00FF0E48 /* OpenGL00_baseInfo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenGL00_baseInfo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B61E86E51F4D813A00FF0E48 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B61E86E71F4D813A00FF0E48 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 				B61E86EA1F4D813B00FF0E48 /* ViewController.h */,
 				B61E86EB1F4D813B00FF0E48 /* ViewController.m */,
 				B61E86FB1F4D81C900FF0E48 /* myVertexShader.vsh */,
+				B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */,
 				B61E86FD1F4D81D000FF0E48 /* Shader_work_process.jpg */,
 				B61E86ED1F4D813B00FF0E48 /* Main.storyboard */,
 				B61E86F01F4D813B00FF0E48 /* Assets.xcassets */,
@@ -148,6 +151,7 @@
 				B61E86F41F4D813B00FF0E48 /* LaunchScreen.storyboard in Resources */,
 				B61E86FE1F4D81D000FF0E48 /* Shader_work_process.jpg in Resources */,
 				B61E86F11F4D813B00FF0E48 /* Assets.xcassets in Resources */,
+				B610D5E81F4DDC70008D2CFA /* myFragmentShader.fsh in Resources */,
 				B61E86EF1F4D813B00FF0E48 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -322,6 +326,7 @@
 				B61E86FA1F4D813B00FF0E48 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

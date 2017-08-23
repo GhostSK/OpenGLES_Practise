@@ -16,6 +16,18 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    EAGLRenderingAPI api = kEAGLRenderingAPIOpenGLES2;
+    EAGLContext* context = [[EAGLContext alloc] initWithAPI:api];
+    if (!context) {
+        NSLog(@"Failed to initialize OpenGLES 2.0 context");
+        exit(1);
+    }
+    
+    // 设置为当前上下文
+    if (![EAGLContext setCurrentContext:context]) {
+        NSLog(@"Failed to set current OpenGL context");
+        exit(1);
+    }
     /*
      https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/#_2
      你需要记住以下单词：
@@ -179,26 +191,16 @@
      }
      ###################
      */
-#pragma mark 顶点着色器编译-如果不能正常运行，改回严格流程
+#pragma mark 顶点着色器编译
     NSString *vertexShaderPath = [[NSBundle mainBundle]pathForResource:@"myVertexShader" ofType:@"vsh"];
     NSString *vertexContent = [NSString stringWithContentsOfFile:vertexShaderPath encoding:NSUTF8StringEncoding error:nil];
 //    NSLog(@"vsh字符串为%@",vertexContent);
     const GLchar *vertexShaderSource = (GLchar *)[vertexContent UTF8String];
-    /*
-     开发者需要在运行时获取函数地址并将其保存在一个函数指针中供以后使用。取得地址的方法因平台而异，在Windows上会是类似这样：
-     
-     // 定义函数原型
-     typedef void (*GL_GENBUFFERS) (GLsizei, GLuint*);
-     // 找到正确的函数并赋值给函数指针
-     GL_GENBUFFERS glGenBuffers  = (GL_GENBUFFERS)wglGetProcAddress("glGenBuffers");
-     // 现在函数可以被正常调用了
-     GLuint buffer;
-     glGenBuffers(1, &buffer);
-     */
-    //以下二行为严格复制流程的指针操作方式
+
 //    GLuint verShader = VBO;  //用于测试标识符冲突能否正常运行
     GLuint verShader = 10086;
     GLuint *verShaderp = &verShader;
+//    verShader = 10010;  //绑定以后verShader的值变化不会引起标识符的变化
     *verShaderp = glCreateShader(GL_VERTEX_SHADER); //严格复制流程结束
     glShaderSource(*verShaderp, 1, &vertexShaderSource, NULL);  //这里使用第一个参数*verShaderp（指针，指向verShader内存地址）
     //和10086（标识符，verShader值）均可编译成功，说明调用方式猜想正确
@@ -248,14 +250,58 @@
      std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
      }
      */
-    int vertexShaderSuccess;
-    glGetShaderiv(*verShaderp, GL_COMPILE_STATUS, &vertexShaderSuccess);
-    if (vertexShaderSuccess) {
+#pragma mark 检测编译成功方法无效与未设置上下文有关
+    int Vertexsuccess = 999;
+    glGetShaderiv(*verShaderp, GL_COMPILE_STATUS, &Vertexsuccess);
+    if (Vertexsuccess) {
         NSLog(@"顶点着色器编译成功");
     }else{
         NSLog(@"顶点着色器编译失败");
+        GLchar messages[256];
+        glGetShaderInfoLog(*verShaderp, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
     }
+#pragma mark 片段着色器
+    /*
+     片段着色器(Fragment Shader)是第二个也是最后一个需要我们创建的着色器。
+     片段着色器所做的事计算像素最后的颜色输出。为了让事情更简单我们的片段着色器会一直输出橘黄色
+     
+     在计算机图形中颜色被表示为有四个元素的数组：红色、绿色、蓝色和透明度。通常缩写为RGBA。
+     当在OpenGL或者GLSL中定义一个颜色的时候，我们把颜色每个分量的强度设置到0.0到1.0之间。
+     
+     C语言下的片段着色器的编写方式
+     #version 330 core
+     out vec4 FragColor;
+     
+     void main()
+     {
+     FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+     }
+     */
+    NSString *fragPath = [[NSBundle mainBundle]pathForResource:@"myFragmentShader" ofType:@"fsh"];
+    NSString *fragString = [NSString stringWithContentsOfFile:fragPath encoding:NSUTF8StringEncoding error:nil];
+//    NSLog(@"fsh字符串为%@",fragString);
+    const GLchar* fragmentShaderSource = (GLchar *)[fragString UTF8String];
+    GLuint frag;
+    GLuint *fragShader = &frag;
+    *fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(*fragShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(*fragShader);
     
+    GLint FragSuccess;
+    glGetShaderiv(*fragShader, GL_COMPILE_STATUS, &FragSuccess);
+    if (FragSuccess) {
+        NSLog(@"片段着色器编译成功");
+    }else{
+        NSLog(@"片段着色器编译失败");
+        GLchar messages[256];
+        glGetShaderInfoLog(*fragShader, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
 
 }
 
