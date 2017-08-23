@@ -183,7 +183,6 @@
     NSString *vertexShaderPath = [[NSBundle mainBundle]pathForResource:@"myVertexShader" ofType:@"vsh"];
     NSString *vertexContent = [NSString stringWithContentsOfFile:vertexShaderPath encoding:NSUTF8StringEncoding error:nil];
 //    NSLog(@"vsh字符串为%@",vertexContent);
-    GLuint verShader;  //该变量值操作过程中一直为0，实际操作对象为该变量的内存地址
     const GLchar *vertexShaderSource = (GLchar *)[vertexContent UTF8String];
     /*
      开发者需要在运行时获取函数地址并将其保存在一个函数指针中供以后使用。取得地址的方法因平台而异，在Windows上会是类似这样：
@@ -197,9 +196,12 @@
      glGenBuffers(1, &buffer);
      */
     //以下二行为严格复制流程的指针操作方式
+//    GLuint verShader = VBO;  //用于测试标识符冲突能否正常运行
+    GLuint verShader = 10086;
     GLuint *verShaderp = &verShader;
     *verShaderp = glCreateShader(GL_VERTEX_SHADER); //严格复制流程结束
-    glShaderSource(*verShaderp, 1, &vertexShaderSource, NULL);
+    glShaderSource(*verShaderp, 1, &vertexShaderSource, NULL);  //这里使用第一个参数*verShaderp（指针，指向verShader内存地址）
+    //和10086（标识符，verShader值）均可编译成功，说明调用方式猜想正确
     glCompileShader(*verShaderp);  //到达这一步时，verShader中装载的应该是已经编译好的shader，与program绑定后即可使用glDeleteShader()函数销毁、
     
     
