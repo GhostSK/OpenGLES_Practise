@@ -6,33 +6,19 @@
 //  Copyright © 2017年 胡杨林. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "OldViewController.h"
 
-@interface ViewController ()
+@interface OldViewController ()
 
 @property (nonatomic, strong)CAEAGLLayer *myEagLayer;
-@property (nonatomic , assign) GLuint myColorRenderBuffer;
-@property (nonatomic , assign) GLuint myColorFrameBuffer;
-
-
 
 @end
 
-@implementation ViewController
+@implementation OldViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
 #pragma mark OpenGL基础环境设置
-    self.myEagLayer = (CAEAGLLayer*) self.view.layer;
-    //设置放大倍数
-    [self.view setContentScaleFactor:[[UIScreen mainScreen] scale]];
-    
-    // CALayer 默认是透明的，必须将它设为不透明才能让其可见
-    self.myEagLayer.opaque = YES;
-    
-    // 设置描绘属性，在这里设置不维持渲染内容以及颜色格式为 RGBA8
-    self.myEagLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                          [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
     //设置OpenGL版本
     EAGLRenderingAPI api = kEAGLRenderingAPIOpenGLES2;
     EAGLContext* context = [[EAGLContext alloc] initWithAPI:api];
@@ -46,11 +32,17 @@
         NSLog(@"Failed to set current OpenGL context");
         exit(1);
     }
-    glDeleteFramebuffers(1, &_myColorRenderBuffer);
-    _myColorRenderBuffer = 0;
-    glDeleteRenderbuffers(1, &_myColorFrameBuffer);
-    _myColorFrameBuffer = 0;  //销毁缓冲回收资源
     
+    self.myEagLayer = (CAEAGLLayer*) self.view.layer;
+    //设置放大倍数
+    [self.view setContentScaleFactor:[[UIScreen mainScreen] scale]];
+    
+    // CALayer 默认是透明的，必须将它设为不透明才能让其可见
+    self.myEagLayer.opaque = YES;
+    
+    // 设置描绘属性，在这里设置不维持渲染内容以及颜色格式为 RGBA8
+    self.myEagLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
     GLuint colorbuffer;
     glGenRenderbuffers(1, &colorbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, colorbuffer);
@@ -66,11 +58,12 @@
     //清屏颜色设定，参数为RGBA
     glClearColor(0.5, 0.5, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT); //只清除颜色
-    
-//    [context presentRenderbuffer:GL_RENDERBUFFER];
+    [context presentRenderbuffer:GL_RENDERBUFFER];
 #pragma mark 基础环境到这里设定结束，如果一切正确，你可以看到你设置的clearColor占满屏幕
-    CGFloat scale = [[UIScreen mainScreen] scale]; //获取视图放大倍数，可以把scale设置为1试试
-    glViewport(self.view.frame.origin.x * scale, self.view.frame.origin.y * scale, self.view.frame.size.width * scale, self.view.frame.size.height * scale); //设置视口大小
+    glDeleteFramebuffers(1, &colorbuffer);
+    colorbuffer = 0;
+    glDeleteRenderbuffers(1, &Framebuffer);
+    Framebuffer = 0;  //销毁缓冲回收资源
     
     /*
      https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/#_2
@@ -242,13 +235,13 @@
 #pragma mark 顶点着色器编译
     NSString *vertexShaderPath = [[NSBundle mainBundle]pathForResource:@"myVertexShader" ofType:@"vsh"];
     NSString *vertexContent = [NSString stringWithContentsOfFile:vertexShaderPath encoding:NSUTF8StringEncoding error:nil];
-//    NSLog(@"vsh字符串为%@",vertexContent);
+    //    NSLog(@"vsh字符串为%@",vertexContent);
     const GLchar *vertexShaderSource = (GLchar *)[vertexContent UTF8String];
-
-//    GLuint verShader = VBO;  //用于测试标识符冲突能否正常运行
+    
+    //    GLuint verShader = VBO;  //用于测试标识符冲突能否正常运行
     GLuint verShader;
     GLuint *verShaderp = &verShader;
-//    verShader = 10010;  //绑定以后verShader的值变化不会引起标识符的变化
+    //    verShader = 10010;  //绑定以后verShader的值变化不会引起标识符的变化
     *verShaderp = glCreateShader(GL_VERTEX_SHADER); //严格复制流程结束
     glShaderSource(*verShaderp, 1, &vertexShaderSource, NULL);  //这里使用第一个参数*verShaderp（指针，指向verShader内存地址）
     //和10086（标识符，verShader值）均可编译成功，说明调用方式猜想正确
@@ -299,7 +292,7 @@
      }
      */
 #pragma mark 检测编译成功方法无效与未设置上下文有关
-    int Vertexsuccess;
+    int Vertexsuccess = 999;
     glGetShaderiv(*verShaderp, GL_COMPILE_STATUS, &Vertexsuccess);
     if (Vertexsuccess) {
         NSLog(@"顶点着色器编译成功");
@@ -330,7 +323,7 @@
      */
     NSString *fragPath = [[NSBundle mainBundle]pathForResource:@"myFragmentShader" ofType:@"fsh"];
     NSString *fragString = [NSString stringWithContentsOfFile:fragPath encoding:NSUTF8StringEncoding error:nil];
-//    NSLog(@"fsh字符串为%@",fragString);
+    //    NSLog(@"fsh字符串为%@",fragString);
     const GLchar* fragmentShaderSource = (GLchar *)[fragString UTF8String];
     GLuint frag;
     GLuint *fragShader = &frag;
@@ -367,17 +360,17 @@
     //检测链接是否成功
     int linkSuccess;
     glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
-        if (linkSuccess) {
-            NSLog(@"link ok");
-            glUseProgram(program); //激活着色器程序
-        }else{
-            NSLog(@"链接错误");
-            GLchar messages[256];
-            glGetShaderInfoLog(*fragShader, sizeof(messages), 0, &messages[0]);
-            NSString *messageString = [NSString stringWithUTF8String:messages];
-            NSLog(@"%@", messageString);
-            exit(1);
-        }
+    if (linkSuccess) {
+        NSLog(@"link ok");
+        glUseProgram(program); //激活着色器程序
+    }else{
+        NSLog(@"链接错误");
+        GLchar messages[256];
+        glGetShaderInfoLog(*fragShader, sizeof(messages), 0, &messages[0]);
+        NSString *messageString = [NSString stringWithUTF8String:messages];
+        NSLog(@"%@", messageString);
+        exit(1);
+    }
     /*
      在调用glUseProgram函数后，每个着色器调用和渲染调用都会使用这个程序对象
      也就是之前连接上的着色器。
@@ -390,7 +383,7 @@
      然后告知OpenGL如何处理这些数据，如何将顶点数据连接到顶点着色器的属性上
      */
 #pragma mark 链接顶点属性
-
+    
     /*
      顶点着色器允许我们制定任何以顶点属性为形式的输入，这是其具有很强灵活性的同时
      还意味着我们必须手动置顶输入数据的哪一个部分对应顶点着色器的哪一个定点属性。
@@ -402,9 +395,9 @@
      数据中第一个只在缓冲开始的地方
      
      有了这些信息我们就可以使用glVertexAttribPointer函数告诉OpenGL如何解析顶点数据了
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (float *)NULL);
-    glEnableVertexAttribArray(0);
-    
+     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (float *)NULL);
+     glEnableVertexAttribArray(0);
+     
      glVertexAttribPointerS函数参数非常多，我们会逐一介绍
      #########附上顶点着色器代码
      //attribute是应用程序传给顶点着色器用的
@@ -429,23 +422,23 @@
      */
     GLuint position = glGetAttribLocation(program, "position");
     glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, NULL);
-    glEnableVertexAttribArray(position);
     /*
      glVertexAttribPointer函数的参数非常多，逐一介绍如下：
      第一个参数制定我们要配置的定点属性（vsh文件中的attribute属性名）
      第二个参数指定定点属性的大小，定点属性是一个vec3，由三个值组成，所以大小是3
      第三个参数指定数据类型，这里是浮点数 GL_FLOAT
      第四个参数定义我们是否希望数据被标准化（Normailze）如果我们设置为GL_TRUE，所有的数据都会被
-         映射到-1到1之间（屏幕标准坐标值）因此设置为GL_FALSE
+     映射到-1到1之间（屏幕标准坐标值）因此设置为GL_FALSE
      第五个参数叫步长（stride），指定连续的定点属性组之间的间隔。由于这里每一个顶点数据是十三个float值
-         所以步长值设定为sizeof(FLfloat) * 3，我们可以将这里这是为0来让OpenGL决定具体步长是多少
+     所以步长值设定为sizeof(FLfloat) * 3，我们可以将这里这是为0来让OpenGL决定具体步长是多少
      （只有数值紧密排列时才可以用），一旦我们有更多的定点属性，就必须小心的定义步长值
      最后一个参数是起始位置的偏移量，表示位置数据在缓冲中起始位置的偏移量
-    
+     
      每个定点属性从VBO管理的内存中过去到他的数据，具体从哪个VBO获取则是在调用glVetexAttribPointer
      时绑定到GL_ARRAY_BUFFER的VBO决定的。
      由于在调用glVetexAttribPointer之前绑定的是先前定义的VBO对象，定点属性position会连接到他的数据
      */
+    glEnableVertexAttribArray(position);
     
     /*
      现在我们已经定义了OpenGL如何解释顶点数据，现在应该使用glEnableVertexAttribArray函数，
@@ -466,17 +459,9 @@
      // 3. 绘制物体
      someOpenGLFunctionThatDrawsOurTriangle();
      */
+    glViewport(0, 0, 414, 736); //设置视口大小
     glDrawArrays(GL_TRIANGLES, 0, 6);
     [context presentRenderbuffer:GL_RENDERBUFFER];
-/*
-
-
- glDrawArrays(GL_TRIANGLES, 0, 6);
- 
- [context presentRenderbuffer:GL_RENDERBUFFER];
- 
- */
-   
     
     
 }
