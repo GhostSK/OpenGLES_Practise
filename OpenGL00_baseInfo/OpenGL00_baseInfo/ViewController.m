@@ -7,8 +7,10 @@
 //
 
 #import "ViewController.h"
-
+#import "MyView.h"
 @interface ViewController ()
+
+@property (nonatomic, strong)CAEAGLLayer *myEagLayer;
 
 @end
 
@@ -16,6 +18,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+#pragma mark OpenGL基础环境设置
+    //设置OpenGL版本
     EAGLRenderingAPI api = kEAGLRenderingAPIOpenGLES2;
     EAGLContext* context = [[EAGLContext alloc] initWithAPI:api];
     if (!context) {
@@ -28,6 +32,39 @@
         NSLog(@"Failed to set current OpenGL context");
         exit(1);
     }
+    
+    self.myEagLayer = (CAEAGLLayer*) self.view.layer;
+    //设置放大倍数
+    [self.view setContentScaleFactor:[[UIScreen mainScreen] scale]];
+    
+    // CALayer 默认是透明的，必须将它设为不透明才能让其可见
+    self.myEagLayer.opaque = YES;
+    
+    // 设置描绘属性，在这里设置不维持渲染内容以及颜色格式为 RGBA8
+    self.myEagLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
+    GLuint colorbuffer;
+    glGenRenderbuffers(1, &colorbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, colorbuffer);
+    // 为 颜色缓冲区 分配存储空间
+    [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:self.myEagLayer];
+    GLuint Framebuffer;
+    glGenFramebuffers(1, &Framebuffer);
+    // 设置为当前 framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, Framebuffer);
+    // 将 _colorRenderBuffer 装配到 GL_COLOR_ATTACHMENT0 这个装配点上
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                              GL_RENDERBUFFER, colorbuffer);
+    //清屏颜色设定，参数为RGBA
+    glClearColor(0.5, 0.5, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT); //只清除颜色
+    [context presentRenderbuffer:GL_RENDERBUFFER];
+#pragma mark 基础环境到这里设定结束，如果一切正确，你可以看到你设置的clearColor占满屏幕
+    glDeleteFramebuffers(1, &colorbuffer);
+    colorbuffer = 0;
+    glDeleteRenderbuffers(1, &Framebuffer);
+    Framebuffer = 0;  //销毁缓冲回收资源
+    
     /*
      https://learnopengl-cn.github.io/01%20Getting%20started/04%20Hello%20Triangle/#_2
      你需要记住以下单词：
@@ -84,10 +121,14 @@
      的范围内才会处理她。所有在所谓的标准化设备坐标（Normalized Device Coordinates）范围内
      的坐标才会最终呈现在屏幕上，其他不在范围内的坐标都不会显示。
      */
-    float vertices[] = {
-        -0.5, -0.5, 0.0,
-        0.5, -0.5, 0.0,
-        0.0, 0.5, 0.0
+    float vertices[] =
+    {
+        0.5f, -0.5f, -1.0f,
+        -0.5f, 0.5f, -1.0f,
+        -0.5f, -0.5f, -1.0f,
+        0.5f, 0.5f, -1.0f,
+        -0.5f, 0.5f, -1.0f,
+        0.5f, -0.5f, -1.0f,
     };
     /*
      由于OpenGL是在3D空间中工作的，而我们渲染的是一个2D三角形，我们将它顶点的z坐标设置为0.0。这样子的话三角形每一点的深度(Depth，译注2)都是一样的，从而使它看上去像是2D的。
@@ -198,7 +239,7 @@
     const GLchar *vertexShaderSource = (GLchar *)[vertexContent UTF8String];
 
 //    GLuint verShader = VBO;  //用于测试标识符冲突能否正常运行
-    GLuint verShader = 10086;
+    GLuint verShader;
     GLuint *verShaderp = &verShader;
 //    verShader = 10010;  //绑定以后verShader的值变化不会引起标识符的变化
     *verShaderp = glCreateShader(GL_VERTEX_SHADER); //严格复制流程结束
@@ -302,7 +343,127 @@
         NSLog(@"%@", messageString);
         exit(1);
     }
+    /*
+     着色器程序对象(Shader Orifran Object)是多个着色器合并之后并最终连接完成的版本。
+     如果要使用刚才编译的着色器我们必须把它链接(Link)成为一个着色器程序对象，然后在渲染对象的
+     时候激活这个着色器程序。已经激活的着色器程序的着色器将在我们发送渲染调用的时候被使用
+     
+     当链接着色器到一个程序的时候，他会把每个着色器的输出链接到下一个着色器的输入。当输入和输出
+     不匹配的时候，你会得到一个链接错误。
+     */
+    GLuint program;
+    program = glCreateProgram();
+    glAttachShader(program, verShader);
+    glAttachShader(program, frag);
+    glLinkProgram(program);
+    
+    //检测链接是否成功
+    int linkSuccess;
+    glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
+        if (linkSuccess) {
+            NSLog(@"link ok");
+            glUseProgram(program); //激活着色器程序
+        }else{
+            NSLog(@"链接错误");
+            GLchar messages[256];
+            glGetShaderInfoLog(*fragShader, sizeof(messages), 0, &messages[0]);
+            NSString *messageString = [NSString stringWithUTF8String:messages];
+            NSLog(@"%@", messageString);
+            exit(1);
+        }
+    /*
+     在调用glUseProgram函数后，每个着色器调用和渲染调用都会使用这个程序对象
+     也就是之前连接上的着色器。
+     在连接完成以后可以删除着色器对象以节约资源，
+     */
+    glDeleteShader(verShader);
+    glDeleteShader(frag);
+    /*
+     现在我们已经把输入顶点发送到了CPU，并指示了GPU如何在顶点和着色器中处理它。
+     然后告知OpenGL如何处理这些数据，如何将顶点数据连接到顶点着色器的属性上
+     */
+#pragma mark 链接顶点属性
 
+    /*
+     顶点着色器允许我们制定任何以顶点属性为形式的输入，这是其具有很强灵活性的同时
+     还意味着我们必须手动置顶输入数据的哪一个部分对应顶点着色器的哪一个定点属性。
+     所以我们必须在渲染前制定OpenGL该如何解释顶点数据。
+     可以参考截图：顶点缓冲数据储存格式
+     位置数据被储存为32位（4字节）浮点值
+     每个位置包含3个这样的值
+     在这3个值之间没有空隙或者其他值。这几个值在数组中紧密排列（tightly Packed）
+     数据中第一个只在缓冲开始的地方
+     
+     有了这些信息我们就可以使用glVertexAttribPointer函数告诉OpenGL如何解析顶点数据了
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (float *)NULL);
+    glEnableVertexAttribArray(0);
+    
+     glVertexAttribPointerS函数参数非常多，我们会逐一介绍
+     #########附上顶点着色器代码
+     //attribute是应用程序传给顶点着色器用的
+     
+     //不允许声明时初始化
+     
+     //attribute限定符标记的是一种全局变量,该变量在顶点着色器中是只读（read-only）的，该变量被用作从OpenGL应用程序向顶点着色器中传递参数，因此该限定符仅能用于顶点着色器。
+     attribute vec3 position;
+     
+     varying lowp vec2 varyTextCoord;
+     
+     void main()
+     {
+     gl_Position = vec4(position.x, position.y, position.z, 1.0);
+     }
+     //示例调用过程
+     每一个attribute在vertexShader中毒有一个location，是用来传递数据的入口。我们可以通过下列代码获取这个入口值:
+     GLuint position = glGetAttribLocation(self.myProgram, "position");
+     glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 5, NULL);
+     glEnableVertexAttribArray(position);
+     GLSL基础语法链接http://www.tuicool.com/articles/yEBFvmA
+     */
+    GLuint position = glGetAttribLocation(program, "position");
+    glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, NULL);
+    /*
+     glVertexAttribPointer函数的参数非常多，逐一介绍如下：
+     第一个参数制定我们要配置的定点属性（vsh文件中的attribute属性名）
+     第二个参数指定定点属性的大小，定点属性是一个vec3，由三个值组成，所以大小是3
+     第三个参数指定数据类型，这里是浮点数 GL_FLOAT
+     第四个参数定义我们是否希望数据被标准化（Normailze）如果我们设置为GL_TRUE，所有的数据都会被
+         映射到-1到1之间（屏幕标准坐标值）因此设置为GL_FALSE
+     第五个参数叫步长（stride），指定连续的定点属性组之间的间隔。由于这里每一个顶点数据是十三个float值
+         所以步长值设定为sizeof(FLfloat) * 3，我们可以将这里这是为0来让OpenGL决定具体步长是多少
+     （只有数值紧密排列时才可以用），一旦我们有更多的定点属性，就必须小心的定义步长值
+     最后一个参数是起始位置的偏移量，表示位置数据在缓冲中起始位置的偏移量
+    
+     每个定点属性从VBO管理的内存中过去到他的数据，具体从哪个VBO获取则是在调用glVetexAttribPointer
+     时绑定到GL_ARRAY_BUFFER的VBO决定的。
+     由于在调用glVetexAttribPointer之前绑定的是先前定义的VBO对象，定点属性position会连接到他的数据
+     */
+    glEnableVertexAttribArray(position);
+    
+    /*
+     现在我们已经定义了OpenGL如何解释顶点数据，现在应该使用glEnableVertexAttribArray函数，
+     以顶点属性位置值为参数，启用定点属性。定点属性默认是禁用的。
+     
+     到这里所有东西已经设置好，我们使用一个顶点缓冲对象VBO将顶点数据初始化到了缓存中，建立了顶点着色器和
+     片段着色器，并告诉了OpenGL如何吧顶点数据连接到顶点着色器的定点属性上。在OpenGL中绘制一个物体，
+     代码是这样的
+     #############注意，这里的代码是C环境
+     // 0. 复制顶点数组到缓冲中供OpenGL使用
+     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+     // 1. 设置顶点属性指针
+     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+     glEnableVertexAttribArray(0);
+     // 2. 当我们渲染一个物体时要使用着色器程序
+     glUseProgram(shaderProgram);
+     // 3. 绘制物体
+     someOpenGLFunctionThatDrawsOurTriangle();
+     */
+    glViewport(0, 0, 414, 736); //设置视口大小
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    [context presentRenderbuffer:GL_RENDERBUFFER];
+    
+    
 }
 
 

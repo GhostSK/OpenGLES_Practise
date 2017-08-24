@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B61042161F4E773F00B68F34 /* 顶点缓冲数据储存格式.jpg in Resources */ = {isa = PBXBuildFile; fileRef = B61042151F4E773F00B68F34 /* 顶点缓冲数据储存格式.jpg */; };
+		B610421D1F4EE04F00B68F34 /* MyView.m in Sources */ = {isa = PBXBuildFile; fileRef = B610421C1F4EE04F00B68F34 /* MyView.m */; };
 		B610D5E81F4DDC70008D2CFA /* myFragmentShader.fsh in Resources */ = {isa = PBXBuildFile; fileRef = B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */; };
 		B61E86E61F4D813A00FF0E48 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B61E86E51F4D813A00FF0E48 /* main.m */; };
 		B61E86E91F4D813B00FF0E48 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B61E86E81F4D813B00FF0E48 /* AppDelegate.m */; };
@@ -19,6 +21,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B61042151F4E773F00B68F34 /* 顶点缓冲数据储存格式.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "顶点缓冲数据储存格式.jpg"; sourceTree = "<group>"; };
+		B610421B1F4EE04F00B68F34 /* MyView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyView.h; sourceTree = "<group>"; };
+		B610421C1F4EE04F00B68F34 /* MyView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyView.m; sourceTree = "<group>"; };
 		B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = myFragmentShader.fsh; sourceTree = "<group>"; };
 		B61E86E11F4D813A00FF0E48 /* OpenGL00_baseInfo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenGL00_baseInfo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B61E86E51F4D813A00FF0E48 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -68,9 +73,12 @@
 				B61E86E81F4D813B00FF0E48 /* AppDelegate.m */,
 				B61E86EA1F4D813B00FF0E48 /* ViewController.h */,
 				B61E86EB1F4D813B00FF0E48 /* ViewController.m */,
+				B610421B1F4EE04F00B68F34 /* MyView.h */,
+				B610421C1F4EE04F00B68F34 /* MyView.m */,
 				B61E86FB1F4D81C900FF0E48 /* myVertexShader.vsh */,
 				B610D5E71F4DDC70008D2CFA /* myFragmentShader.fsh */,
 				B61E86FD1F4D81D000FF0E48 /* Shader_work_process.jpg */,
+				B61042151F4E773F00B68F34 /* 顶点缓冲数据储存格式.jpg */,
 				B61E86ED1F4D813B00FF0E48 /* Main.storyboard */,
 				B61E86F01F4D813B00FF0E48 /* Assets.xcassets */,
 				B61E86F21F4D813B00FF0E48 /* LaunchScreen.storyboard */,
@@ -148,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B61E86FC1F4D81C900FF0E48 /* myVertexShader.vsh in Resources */,
+				B61042161F4E773F00B68F34 /* 顶点缓冲数据储存格式.jpg in Resources */,
 				B61E86F41F4D813B00FF0E48 /* LaunchScreen.storyboard in Resources */,
 				B61E86FE1F4D81D000FF0E48 /* Shader_work_process.jpg in Resources */,
 				B61E86F11F4D813B00FF0E48 /* Assets.xcassets in Resources */,
@@ -163,6 +172,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B610421D1F4EE04F00B68F34 /* MyView.m in Sources */,
 				B61E86EC1F4D813B00FF0E48 /* ViewController.m in Sources */,
 				B61E86E91F4D813B00FF0E48 /* AppDelegate.m in Sources */,
 				B61E86E61F4D813A00FF0E48 /* main.m in Sources */,
