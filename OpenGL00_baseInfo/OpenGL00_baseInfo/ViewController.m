@@ -23,16 +23,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 #pragma mark OpenGL基础环境设置
-    self.myEagLayer = (CAEAGLLayer*) self.view.layer;
-    //设置放大倍数
-    [self.view setContentScaleFactor:[[UIScreen mainScreen] scale]];
-    
-    // CALayer 默认是透明的，必须将它设为不透明才能让其可见
-    self.myEagLayer.opaque = YES;
-    
-    // 设置描绘属性，在这里设置不维持渲染内容以及颜色格式为 RGBA8
-    self.myEagLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                          [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
     //设置OpenGL版本
     EAGLRenderingAPI api = kEAGLRenderingAPIOpenGLES2;
     EAGLContext* context = [[EAGLContext alloc] initWithAPI:api];
@@ -46,6 +36,16 @@
         NSLog(@"Failed to set current OpenGL context");
         exit(1);
     }
+    self.myEagLayer = (CAEAGLLayer*) self.view.layer;
+    //设置放大倍数
+    [self.view setContentScaleFactor:[[UIScreen mainScreen] scale]];
+    
+    // CALayer 默认是透明的，必须将它设为不透明才能让其可见
+    self.myEagLayer.opaque = YES;
+    
+    // 设置描绘属性，在这里设置不维持渲染内容以及颜色格式为 RGBA8
+    self.myEagLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                          [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
     glDeleteFramebuffers(1, &_myColorRenderBuffer);
     _myColorRenderBuffer = 0;
     glDeleteRenderbuffers(1, &_myColorFrameBuffer);
@@ -54,6 +54,9 @@
     GLuint colorbuffer;
     glGenRenderbuffers(1, &colorbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, colorbuffer);
+    
+#pragma mark 改动已确认，需要颜色缓冲区和frame缓冲区，以及设定视窗大小
+    
     // 为 颜色缓冲区 分配存储空间
     [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:self.myEagLayer];
     GLuint Framebuffer;
@@ -66,8 +69,7 @@
     //清屏颜色设定，参数为RGBA
     glClearColor(0.5, 0.5, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT); //只清除颜色
-    
-//    [context presentRenderbuffer:GL_RENDERBUFFER];
+
 #pragma mark 基础环境到这里设定结束，如果一切正确，你可以看到你设置的clearColor占满屏幕
     CGFloat scale = [[UIScreen mainScreen] scale]; //获取视图放大倍数，可以把scale设置为1试试
     glViewport(self.view.frame.origin.x * scale, self.view.frame.origin.y * scale, self.view.frame.size.width * scale, self.view.frame.size.height * scale); //设置视口大小
@@ -468,14 +470,7 @@
      */
     glDrawArrays(GL_TRIANGLES, 0, 6);
     [context presentRenderbuffer:GL_RENDERBUFFER];
-/*
 
-
- glDrawArrays(GL_TRIANGLES, 0, 6);
- 
- [context presentRenderbuffer:GL_RENDERBUFFER];
- 
- */
    
     
     
